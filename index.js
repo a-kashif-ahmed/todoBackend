@@ -117,7 +117,7 @@ app.post("/login", (req, res) => {
       return res.json({
         token,
         user: {
-
+          avatar: result.avatar,
           email: result.email,
           name: result.name
         }
@@ -159,7 +159,7 @@ app.post('/search', verifyToken, (req, res) => {
   //avatar
   db.all(
     `
-    SELECT email, name 
+    SELECT email, name , avatar
     FROM users
     `,
     [],
@@ -407,7 +407,7 @@ app.post('/friend-tasks', verifyToken, (req, res) => {
   SELECT 
     task.*,
     users.name,
-    
+    users.avatar
     
 
   FROM task
@@ -832,7 +832,7 @@ app.post('/friend/remove', verifyToken, (req, res) => {
 app.post('/friend/list', verifyToken, (req,res)=>{
   const {email} = req.body;
   //u2.avatar
-  db.all('SELECT u2.name, u2.email FROM users u1 JOIN users u2 ON instr(u1.friend_emails,u2.email) > 0 WHERE u1.email = ?',[email], (err,rows)=>{
+  db.all('SELECT u2.name, u2.email,u2.avatar FROM users u1 JOIN users u2 ON instr(u1.friend_emails,u2.email) > 0 WHERE u1.email = ?',[email], (err,rows)=>{
 
       if (err) {
 

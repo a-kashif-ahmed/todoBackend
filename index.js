@@ -9,7 +9,7 @@ const SECRET_KEY = '11!834*q'
 app.use(cors());
 app.use(express.json());
 
-const db = new sqlite3.Database("/database/data.db");
+const db = new sqlite3.Database("./data.db");
 
 // Create table
 db.serialize(() => {

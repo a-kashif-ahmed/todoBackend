@@ -136,11 +136,11 @@ app.post("/login", (req, res) => {
 
 app.post("/signin", (req, res) => {
   console.log("post");
-  const { name, email, password,avatar, gender } = req.body;
+  const { name, email, password, avatar, gender } = req.body;
   console.log(req.body);
   db.run(
     "INSERT INTO users(name,email,password,avatar,gender) VALUES(?,?,?,?,?)",
-    [name, email, password, avatar,gender],
+    [name, email, password, avatar, gender],
     function (err) {
       if (err)
         return res.status(500).json({
@@ -429,7 +429,7 @@ app.post('/friend-tasks', verifyToken, (req, res) => {
                 const friendName = task.name;
                 if (!tasksAll[friendName]) {
                   tasksAll[friendName] = {
-                    
+                    avatar: task.avatar,  // 👈 add this
                     tasks: []
                   };
                 }
@@ -440,9 +440,6 @@ app.post('/friend-tasks', verifyToken, (req, res) => {
 
             // All queries finished
             if (completedQueries === friends.length) {
-
-
-
               return res.json(tasksAll);
 
             }
@@ -484,7 +481,7 @@ app.post('/friend-request/list', verifyToken, (req, res) => {
 
   db.get(
     `
-    SELECT friend_requests, name
+    SELECT friend_requests, name, avatar
     FROM users
     WHERE email = ?
     `,
@@ -504,11 +501,12 @@ app.post('/friend-request/list', verifyToken, (req, res) => {
       }
 
       res.json({
-  friend_requests: JSON.parse(
-    row.friend_requests || "[]"
-  ),
-  name: row.name
-});
+        friend_requests: JSON.parse(
+          row.friend_requests || "[]"
+        ),
+        name: row.name,
+        avatar: row.avatar
+      });
 
     }
   );
@@ -829,20 +827,20 @@ app.post('/friend/remove', verifyToken, (req, res) => {
 
 });
 
-app.post('/friend/list', verifyToken, (req,res)=>{
-  const {email} = req.body;
+app.post('/friend/list', verifyToken, (req, res) => {
+  const { email } = req.body;
   //u2.avatar
-  db.all('SELECT u2.name, u2.email,u2.avatar FROM users u1 JOIN users u2 ON instr(u1.friend_emails,u2.email) > 0 WHERE u1.email = ?',[email], (err,rows)=>{
+  db.all('SELECT u2.name, u2.email,u2.avatar FROM users u1 JOIN users u2 ON instr(u1.friend_emails,u2.email) > 0 WHERE u1.email = ?', [email], (err, rows) => {
 
-      if (err) {
+    if (err) {
 
-        return res.status(500).json({
-          error: err.message
-        });
-      }
-      console.log(rows);
-      res.json(rows);
+      return res.status(500).json({
+        error: err.message
+      });
     }
+    console.log(rows);
+    res.json(rows);
+  }
   );
 });
 

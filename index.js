@@ -41,6 +41,7 @@ db.serialize(() => {
       date TEXT NOT NULL,
       repeat INTEGER DEFAULT 0,
       visible INTEGER DEFAULT 1,
+      complete_dates TEXT DEFAULT '[]',
       
       FOREIGN KEY(user_email)
       REFERENCES users(email)

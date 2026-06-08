@@ -6,7 +6,11 @@ const jwt = require('jsonwebtoken')
 
 const app = express();
 const SECRET_KEY = '11!834*q'
-app.use(cors());
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'DELETE', 'PUT', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
 app.use(express.json());
 
 const db = new sqlite3.Database("./data.db");

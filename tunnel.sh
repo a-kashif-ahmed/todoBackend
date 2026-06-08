@@ -1,8 +1,9 @@
 #!/bin/bash
+trap "echo 'Stopping tunnel...'; exit 0" SIGINT SIGTERM
+
 while true; do
   ssh -R 80:localhost:3177 nokey@localhost.run 2>&1 | while read line; do
     echo "$line"
-    # Only match the actual tunnel URL like 2f3305526f2647.lhr.life
     if [[ $line == *"lhr.life"* ]]; then
       URL=$(echo "$line" | grep -o 'https://[a-z0-9]*\.lhr\.life')
       if [ ! -z "$URL" ]; then

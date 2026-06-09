@@ -508,7 +508,7 @@ app.post('/friend-request/list', verifyToken, (req, res) => {
 
       res.json([
   {
-    friend_requests: row.friend_requests,
+    friend_requests: JSON.parse(row.friend_requests),
     name: row.name,
     avatar: row.avatar
   }

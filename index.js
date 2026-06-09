@@ -11,6 +11,7 @@ app.use(cors({
   methods: ['GET', 'POST', 'DELETE', 'PUT', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
+
 app.use(express.json());
 
 const db = new sqlite3.Database("./data.db");
@@ -505,14 +506,13 @@ app.post('/friend-request/list', verifyToken, (req, res) => {
         });
       }
 
-      res.json({
-        friend_requests: JSON.parse(
-          row.friend_requests || "[]"
-        ),
-        name: row.name,
-        avatar: row.avatar
-      });
-
+      res.json([
+  {
+    friend_requests: row.friend_requests,
+    name: row.name,
+    avatar: row.avatar
+  }
+]);
     }
   );
 

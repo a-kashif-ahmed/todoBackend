@@ -160,6 +160,28 @@ app.post("/signin", (req, res) => {
   );
 });
 
+app.post('/forgotpass', (req, res) => {
+  const { email, lastTask } = req.body;
+
+  db.get(
+    `SELECT * FROM task WHERE user_email = ? ORDER BY id DESC LIMIT 1`,
+    [email],
+    (err, task) => {
+      if (err || !task) return res.status(404).json({ error: "No tasks found" });
+
+      if (task.title.toLowerCase().trim() === lastTask.toLowerCase().trim()) {
+        // Match — return password
+        db.get(`SELECT password FROM users WHERE email = ?`, [email], (err, user) => {
+          if (err || !user) return res.status(404).json({ error: "User not found" });
+          res.json({ password: user.password });
+        });
+      } else {
+        res.status(400).json({ error: "Task doesn't match" });
+      }
+    }
+  );
+});
+
 // SEARCH EMAIL 
 app.post('/search', verifyToken, (req, res) => {
   //avatar

@@ -47,6 +47,7 @@ db.serialize(() => {
       repeat INTEGER DEFAULT 0,
       visible INTEGER DEFAULT 1,
       complete_dates TEXT DEFAULT '[]',
+      updatedAt TEXT,
       
       FOREIGN KEY(user_email)
       REFERENCES users(email)
@@ -208,14 +209,13 @@ app.post('/search', verifyToken, (req, res) => {
 
 //TASKS APIs
 app.post('/task/list', verifyToken, (req, res) => {
-  console.log('tasksftecg')
+
   const { email } = req.body;
 
-  if (!email) {
-    return res.status(400).json({
-      error: "Email required"
-    });
-  }
+  const today =
+    new Date()
+      .toISOString()
+      .substring(0, 10);
 
   db.all(
     `
@@ -232,11 +232,54 @@ app.post('/task/list', verifyToken, (req, res) => {
         });
       }
 
-      res.json(tasks);
+      tasks.forEach(task => {
 
+        if (task.repeat != 1) {
+          return;
+        }
+
+        if (task.last_reset === today) {
+          return;
+        }
+
+        let history = [];
+
+        try {
+          history = JSON.parse(
+            task.completed_dates || "[]"
+          );
+        } catch (_) {}
+
+        history.push({
+          date: task.last_reset,
+          status: task.status
+        });
+
+        db.run(
+          `
+          UPDATE task
+          SET
+            status = 0,
+            completed_dates = ?,
+            last_reset = ?
+          WHERE id = ?
+          `,
+          [
+            JSON.stringify(history),
+            today,
+            task.id
+          ]
+        );
+
+        task.status = 0;
+        task.completed_dates =
+          JSON.stringify(history);
+        task.last_reset = today;
+      });
+
+      res.json(tasks);
     }
   );
-
 });
 
 app.post('/task/create', verifyToken, (req, res) => {
@@ -248,6 +291,7 @@ app.post('/task/create', verifyToken, (req, res) => {
     visible,
     email
   } = req.body;
+  const today = new Date().toISOString().substring(0, 10);
 
   db.run(
     `
@@ -258,7 +302,8 @@ app.post('/task/create', verifyToken, (req, res) => {
       repeat,
       visible,
       status,
-      user_email
+      user_email,
+      updatedAt
     )
     VALUES (?, ?, ?, ?, ?, ?)
     `,
@@ -268,7 +313,8 @@ app.post('/task/create', verifyToken, (req, res) => {
       repeat,
       visible,
       0,
-      email
+      email,
+      today
     ],
     function (err) {
 
@@ -529,12 +575,12 @@ app.post('/friend-request/list', verifyToken, (req, res) => {
       }
 
       res.json([
-  {
-    friend_requests: JSON.parse(row.friend_requests),
-    name: row.name,
-    avatar: row.avatar
-  }
-]);
+        {
+          friend_requests: JSON.parse(row.friend_requests),
+          name: row.name,
+          avatar: row.avatar
+        }
+      ]);
     }
   );
 

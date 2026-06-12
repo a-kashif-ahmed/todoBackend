@@ -305,7 +305,7 @@ app.post('/task/create', verifyToken, (req, res) => {
       user_email,
       updatedAt
     )
-    VALUES (?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
     `,
     [
       title,

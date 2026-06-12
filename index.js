@@ -238,7 +238,7 @@ app.post('/task/list', verifyToken, (req, res) => {
           return;
         }
 
-        if (task.last_reset === today) {
+        if (task.updatedAt === today) {
           return;
         }
 
@@ -251,7 +251,7 @@ app.post('/task/list', verifyToken, (req, res) => {
         } catch (_) { }
 
         history.push({
-          date: task.last_reset,
+          date: task.updatedAt,
           status: task.status
         });
 
@@ -261,7 +261,7 @@ app.post('/task/list', verifyToken, (req, res) => {
           SET
             status = 0,
             complete_dates = ?,
-            last_reset = ?
+            updatedAt = ?
           WHERE id = ?
           `,
           [
@@ -274,7 +274,7 @@ app.post('/task/list', verifyToken, (req, res) => {
         task.status = 0;
         task.complete_dates =
           JSON.stringify(history);
-        task.last_reset = today;
+        task.updatedAt = today;
       });
 
       res.json(tasks);

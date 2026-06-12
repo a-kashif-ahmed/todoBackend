@@ -246,7 +246,7 @@ app.post('/task/list', verifyToken, (req, res) => {
 
         try {
           history = JSON.parse(
-            task.completed_dates || "[]"
+            task.complete_dates || "[]"
           );
         } catch (_) { }
 
@@ -260,7 +260,7 @@ app.post('/task/list', verifyToken, (req, res) => {
           UPDATE task
           SET
             status = 0,
-            completed_dates = ?,
+            complete_dates = ?,
             last_reset = ?
           WHERE id = ?
           `,
@@ -272,7 +272,7 @@ app.post('/task/list', verifyToken, (req, res) => {
         );
 
         task.status = 0;
-        task.completed_dates =
+        task.complete_dates =
           JSON.stringify(history);
         task.last_reset = today;
       });

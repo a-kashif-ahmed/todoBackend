@@ -108,7 +108,7 @@ app.post("/login", (req, res) => {
         error: err.message
       });
     }
-
+    if (!result) return res.status(404).json({ error: "User not found" });
     if (result.password == password) {
       const token = jwt.sign(
         {
@@ -211,7 +211,7 @@ app.post('/search', verifyToken, (req, res) => {
 app.post('/task/list', verifyToken, (req, res) => {
 
   const { email } = req.body;
-
+  if (!email) return res.status(400).json({ error: "Email required" });
   const today =
     new Date()
       .toISOString()
@@ -248,7 +248,7 @@ app.post('/task/list', verifyToken, (req, res) => {
           history = JSON.parse(
             task.completed_dates || "[]"
           );
-        } catch (_) {}
+        } catch (_) { }
 
         history.push({
           date: task.last_reset,
@@ -531,22 +531,15 @@ app.post('/friend-tasks', verifyToken, (req, res) => {
 
 app.post('/friend-request', verifyToken, (req, res) => {
   const { email, friendEmail } = req.body;
-  console.log("heh");
+  if (!email || !friendEmail) return res.status(400).json({ error: "Missing fields" });
   db.run(
-    `
-                UPDATE users
-                SET friend_requests = ?
-                WHERE email = ?
-                `,
-    [
-      JSON.stringify(email),
-      friendEmail
-    ]
+    `UPDATE users SET friend_requests = ? WHERE email = ?`,
+    [JSON.stringify(email), friendEmail],
+    (err) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ msg: `Request Sent to ${friendEmail}` });
+    }
   );
-  res.json({
-    "msg": `Request Sent to ${friendEmail}`
-  });
-
 });
 
 app.post('/friend-request/list', verifyToken, (req, res) => {
@@ -574,13 +567,11 @@ app.post('/friend-request/list', verifyToken, (req, res) => {
         });
       }
 
-      res.json([
-        {
-          friend_requests: JSON.parse(row.friend_requests),
-          name: row.name,
-          avatar: row.avatar
-        }
-      ]);
+      res.json([{
+        friend_requests: (() => { try { return JSON.parse(row.friend_requests); } catch { return []; } })(),
+        name: row.name,
+        avatar: row.avatar
+      }]);
     }
   );
 
